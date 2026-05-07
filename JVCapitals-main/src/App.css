@@ -1,0 +1,123 @@
+.hero-bg {
+  background-image: radial-gradient(
+      circle at top,
+      rgba(239, 68, 68, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.97));
+}
+
+/* Ensure the root layout doesn't overflow when using full-screen hero */
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background-color: #101726;
+}
+
+/* * {
+  color: #fff;
+} */
+
+/* Mobile-only page background override */
+@media (max-width: 767px) {
+  html,
+  body,
+  #root,
+  main {
+    background-image: 
+      radial-gradient(
+        circle at top,
+        rgba(90, 130, 160, 0.15),
+        transparent 55%
+      ),
+      radial-gradient(
+        circle at bottom right,
+        rgba(11, 17, 30, 0.85),
+        rgba(11, 17, 30, 1)
+      ) !important;
+
+    background-color: #0B111E !important;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
+}
+
+.animate-fade-from-left {
+  animation: fade-from-left 0.45s ease-out both;
+}
+
+.animation-delay-100 {
+  animation-delay: 0.1s !important;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s !important;
+}
+
+@keyframes slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-from-left {
+  animation: slide-from-left 0.32s ease-out both;
+}
+
+.animate-slide-from-right {
+  animation: slide-from-right 0.32s ease-out both;
+}
+
+.animation-delay-250 {
+  animation-delay: 0.25s !important;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s !important;
+}
+
+.animation-delay-350 {
+  animation-delay: 0.35s !important;
+}
