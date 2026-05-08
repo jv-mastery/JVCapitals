@@ -37,27 +37,29 @@ function HeroSection() {
       id="home"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-black/90" />
-      <div className="relative mt-5 mx-auto flex min-h-[90vh] max-w-6xl flex-col-reverse items-center justify-center gap-5 px-6 py-10 lg:flex-row lg:items-center lg:justify-between lg:gap-24 w-full">
+      <div className="relative mt-5 mx-auto flex min-h-[90vh] max-w-6xl flex-col-reverse items-center justify-between px-6 py-10 lg:flex-row lg:items-center lg:justify-between lg:gap-24 w-full">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-xl text-white text-center lg:text-left w-full"
+          className="flex flex-col sm:w-full max-w-3xl text-white text-center lg:text-center p-5 w-full m-auto max-sm:gap-10 lg:mt-10 lg:gap-5 md:gap-5 justify-center justify-center items-center max-sm:h-[90vh] h-[90%]"
         >
-          <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-3xl p-4 rounded-lg">
+          {/* <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-3xl p-4 rounded-lg">
             <span className="block text-white text-5xl max-md:text-4xl max-sm:text-3xl">JV Mastery Program</span>
             <span className="block text-2xl text-red-500! max-sm:text-lg max-sm:mt-2">Coach Jv Academy</span>
-          </h1>
+          </h1> */}
+
+          <p className="flex font-bold max-sm:text-[32px] lg:text-[55px] text-4xl sm:w-full  lg:mt-5 text-white-500 leading-13 w-[100%] text-center m-auto align-center">
+              Ready to take your future into your own hands?
+            </p>{' '} <br />
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-10 text-lg leading-relaxed text-white/80"
+            className="mt-10 text-lg leading-relaxed text-white-80 gap-10 sm:w-full lg:w-[70%] m-auto"
           >
-            <span className="font-bold text-white-500">
-              Ready to take your future into your own hands?
-            </span>{' '} <br />
+          
             Dive into the proven process for reaching the peak of personal and
             financial freedom with the Coach Academy.
           </motion.p>
@@ -68,13 +70,13 @@ function HeroSection() {
             transition={{ duration: 0.5, delay: 0.6 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#BE0101] px-10 py-2 text-lg font-semibold shadow-lg shadow-red-600/40 transition hover:bg-red-700"
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#BE0101] px-10 py-2 text-lg font-semibold shadow-lg shadow-red-600/40 transition hover:bg-red-700 w-[60%] max-sm:w-[90%]"
           >
             Sign Up Today
           </motion.a>
         </motion.div>
 
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -86,7 +88,7 @@ function HeroSection() {
             src={heroImg}
             alt="JV Academy logo"
           />
-        </motion.div>
+        </motion.div> */}
       </div>
     </motion.section>
   )
