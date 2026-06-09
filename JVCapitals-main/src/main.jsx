@@ -7,10 +7,10 @@ import App from "./App.jsx";
 import queryClient from "./queryClient";
 
 createRoot(document.getElementById("root")).render(
-	<StrictMode>
+	// <StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<App />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
-	</StrictMode>,
+	// </StrictMode>,
 );

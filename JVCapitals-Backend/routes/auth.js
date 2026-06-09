@@ -1,14 +1,16 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
-import { authenticateToken } from "../middleware/auth.js";
+import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 import { cacheService } from "../services/cacheService.js";
 import {
 	userCacheMiddleware,
 	invalidateCacheMiddleware,
 	cachePatterns,
 } from "../middleware/cache.js";
+import EmailService from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -86,29 +88,21 @@ router.post("/register", async (req, res) => {
 		}
 
 		const user = await User.create({ email, password, name });
-		const token = await User.generateToken(user);
-		const refreshToken = await User.generateRefreshToken(user);
 
-		// Create session
-		const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-		await User.createSession(
-			user.id,
-			tokenHash,
-			7 * 24 * 60 * 60, // 7 days in seconds
-			req.ip,
-			req.get("User-Agent"),
-		);
+		// Send verification email
+		try {
+			await EmailService.sendVerificationEmail(
+				user.email,
+				user.name,
+				user.verification_token,
+			);
+		} catch (emailError) {
+			console.error("Failed to send verification email:", emailError);
+		}
 
 		res.status(201).json({
-			message: "User registered successfully",
-			user: {
-				id: user.id,
-				email: user.email,
-				name: user.name,
-				is_admin: user.is_admin,
-			},
-			token,
-			refreshToken,
+			message: "User registered successfully. Please verify your email.",
+			email: user.email,
 		});
 	} catch (error) {
 		console.error("Registration error:", error);
@@ -334,13 +328,8 @@ router.post("/admin-signup", async (req, res) => {
 });
 
 // Admin create user endpoint (for existing admins to create users)
-router.post("/admin/create-user", authenticateToken, async (req, res) => {
+router.post("/admin/create-user", authenticateToken, requireAdmin, async (req, res) => {
 	try {
-		// Check if current user is admin
-		if (!req.user.isAdmin) {
-			return res.status(403).json({ error: "Admin privileges required" });
-		}
-
 		const { email, password, name, adminCode } = req.body;
 
 		// Basic validation
@@ -389,6 +378,122 @@ router.post("/admin/create-user", authenticateToken, async (req, res) => {
 	} catch (error) {
 		console.error("Admin create user error:", error);
 		res.status(400).json({ error: error.message });
+	}
+});
+
+// Verify email address
+router.get("/verify-email", async (req, res) => {
+	try {
+		const { token } = req.query;
+		if (!token) return res.status(400).json({ error: "Token is required" });
+
+		const user = await User.findByVerificationToken(token);
+		if (!user)
+			return res
+				.status(400)
+				.json({ error: "Invalid or expired verification token" });
+
+		await User.verifyUser(user.id);
+
+		res.json({ message: "Email verified successfully. You can now login." });
+	} catch (error) {
+		console.error("Verification error:", error);
+		res.status(500).json({ error: "Verification failed" });
+	}
+});
+
+// Request password reset
+router.post("/forgot-password", async (req, res) => {
+	try {
+		const { email } = req.body;
+		if (!email) return res.status(400).json({ error: "Email is required" });
+
+		const token = crypto.randomBytes(32).toString("hex");
+		const expires = new Date(Date.now() + 3600000); // 1 hour
+
+		const user = await User.setResetToken(email, token, expires);
+
+		// Even if user doesn't exist, we return 200 for security reasons
+		if (user) {
+			await EmailService.sendPasswordResetEmail(user.email, user.name, token);
+		}
+
+		res.json({
+			message:
+				"If an account with that email exists, a password reset link has been sent.",
+		});
+	} catch (error) {
+		console.error("Forgot password error:", error);
+		res.status(500).json({ error: "Failed to process request" });
+	}
+});
+
+// Reset password using token
+router.post("/reset-password", async (req, res) => {
+	try {
+		const { token, password } = req.body;
+
+		if (!token || !password) {
+			return res.status(400).json({ error: "Token and password are required" });
+		}
+
+		if (password.length < 6) {
+			return res
+				.status(400)
+				.json({ error: "Password must be at least 6 characters" });
+		}
+
+		const user = await User.findByResetToken(token);
+		if (!user) {
+			return res.status(400).json({ error: "Invalid or expired reset token" });
+		}
+
+		await User.updatePassword(user.id, password);
+
+		// Send confirmation email
+		try {
+			await EmailService.sendPasswordChangedEmail(user.email, user.name);
+		} catch (emailError) {
+			console.error("Confirmation email failed:", emailError);
+		}
+
+		res.json({ message: "Password updated successfully" });
+	} catch (error) {
+		console.error("Reset password error:", error);
+		res.status(500).json({ error: "Failed to reset password" });
+	}
+});
+
+// Resend verification email
+router.post("/resend-verification", async (req, res) => {
+	try {
+		const { email } = req.body;
+		if (!email) {
+			return res.status(400).json({ error: "Email is required" });
+		}
+
+		const user = await User.findByEmail(email);
+		if (!user) {
+			// Return success even if user not found for security reasons
+			return res.json({
+				message: "Verification email sent if account exists.",
+			});
+		}
+
+		if (user.is_verified) {
+			return res.status(400).json({ error: "Email is already verified" });
+		}
+
+		await EmailService.sendVerificationEmail(
+			user.email,
+			user.name,
+			user.verification_token,
+		);
+
+		res.json({ message: "Verification email resent successfully" });
+	} catch (error) {
+		console.error("Resend verification error:", error);
+		res.status(500).json({ error: "Failed to resend verification email" });
 	}
 });
 

@@ -61,8 +61,8 @@ export default function Signup() {
 			} else {
 				// Use regular signup for regular users
 				await signup({ name, email, password });
-				// Redirect to dashboard
-				window.location.href = "#/dashboard";
+				// Redirect to verify-email-sent page
+				window.location.href = `#/verify-email-sent?email=${encodeURIComponent(email)}`;
 			}
 		} catch (err) {
 			setError(err.message);

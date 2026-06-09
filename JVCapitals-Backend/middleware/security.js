@@ -7,7 +7,7 @@ class SecurityMiddleware {
 	static rateLimiter() {
 		return rateLimit({
 			windowMs: 5 * 60 * 1000, // 5 minutes
-			max: process.env.NODE_ENV === "production" ? 3000 : 1000, // Increased for multi-user hosting
+			max: process.env.NODE_ENV === "production" ? 2000 : 1000, // Further increased for multi-user hosting
 			message: {
 				success: false,
 				error: "Too many requests...",
@@ -38,7 +38,7 @@ class SecurityMiddleware {
 	static strictRateLimiter() {
 		return rateLimit({
 			windowMs: 10 * 60 * 1000, // 10 minutes
-			max: process.env.NODE_ENV === "production" ? 300 : 50, // Increased for multi-user hosting
+			max: process.env.NODE_ENV === "production" ? 200 : 50, // Further increased for multi-user hosting
 			message: {
 				success: false,
 				error: "Too many requests",

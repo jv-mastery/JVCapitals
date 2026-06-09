@@ -116,6 +116,31 @@ class ApiService {
 		});
 	}
 
+	async verifyEmail(token) {
+		return await this.request(`/auth/verify-email?token=${token}`);
+	}
+
+	async forgotPassword(email) {
+		return await this.request("/auth/forgot-password", {
+			method: "POST",
+			body: JSON.stringify({ email }),
+		});
+	}
+
+	async resendVerification(email) {
+		return await this.request("/auth/resend-verification", {
+			method: "POST",
+			body: JSON.stringify({ email }),
+		});
+	}
+
+	async resetPassword(token, password) {
+		return await this.request("/auth/reset-password", {
+			method: "POST",
+			body: JSON.stringify({ token, password }),
+		});
+	}
+
 	// User endpoints
 	async getAllUsers(params = {}) {
 		const queryString = new URLSearchParams(params).toString();

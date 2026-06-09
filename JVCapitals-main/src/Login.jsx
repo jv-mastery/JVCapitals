@@ -110,6 +110,14 @@ export default function Login() {
 								placeholder="••••••••"
 								className="w-full rounded-lg bg-gray-800/50  border border-b-white/10 rounded-lg p-2 text-white placeholder-gray-500 py-2 px-4 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
 							/>
+							<div className="flex justify-end mt-1">
+								<a
+									href="#/forgot-password"
+									className="text-xs text-red-500 hover:text-red-400 font-medium transition"
+								>
+									Forgot Password?
+								</a>
+							</div>
 						</div>
 
 						{/* Submit Button */}

@@ -65,33 +65,12 @@ export const useAuthStore = create(
 			},
 
 			signup: async (userData) => {
-				const { setToken, setRefreshToken, setUser, setError } = get();
+				const { setError } = get();
 				try {
 					setError(null);
 					await delay(200);
 					const apiService = (await import("./services/api")).default;
 					const response = await apiService.register(userData);
-
-					if (response.token) {
-						setToken(response.token);
-						if (response.refreshToken) {
-							setRefreshToken(response.refreshToken);
-						}
-
-						// Get complete user data including created_at
-						try {
-							const userResponse = await apiService.getCurrentUser();
-							const transformedUser = transformUserData(userResponse.user);
-							setUser(transformedUser);
-						} catch (userError) {
-							console.warn(
-								"Failed to fetch complete user data, using signup response:",
-								userError,
-							);
-							const transformedUser = transformUserData(response.user);
-							setUser(transformedUser);
-						}
-					}
 					return response;
 				} catch (error) {
 					console.error("Signup failed:", error);
@@ -229,6 +208,66 @@ export const useAuthStore = create(
 				} catch (error) {
 					console.error("Profile update failed:", error);
 					setError(error.message || "Profile update failed");
+					throw error;
+				}
+			},
+
+			verifyEmail: async (token) => {
+				const { setError } = get();
+				try {
+					setError(null);
+					await delay(200);
+					const apiService = (await import("./services/api")).default;
+					const response = await apiService.verifyEmail(token);
+					return response;
+				} catch (error) {
+					console.error("Email verification failed:", error);
+					setError(error.message || "Email verification failed");
+					throw error;
+				}
+			},
+
+			resendVerification: async (email) => {
+				const { setError } = get();
+				try {
+					setError(null);
+					await delay(200);
+					const apiService = (await import("./services/api")).default;
+					const response = await apiService.resendVerification(email);
+					return response;
+				} catch (error) {
+					console.error("Resend verification failed:", error);
+					setError(error.message || "Failed to resend verification email");
+					throw error;
+				}
+			},
+
+			forgotPassword: async (email) => {
+				const { setError } = get();
+				try {
+					setError(null);
+					await delay(200);
+					const apiService = (await import("./services/api")).default;
+					const response = await apiService.forgotPassword(email);
+					return response;
+				} catch (error) {
+					console.error("Forgot password request failed:", error);
+					setError(error.message || "Failed to send reset link");
+					throw error;
+				}
+			},
+
+			resetPassword: async (token, password) => {
+				const { setError } = get();
+				try {
+					setError(null);
+					await delay(200);
+					const apiService = (await import("./services/api")).default;
+					const response = await apiService.resetPassword(token, password);
+					return response;
+				} catch (error) {
+					console.error("Password reset failed:", error);
+					setError(error.message || "Password reset failed");
 					throw error;
 				}
 			},

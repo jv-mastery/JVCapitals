@@ -12,10 +12,11 @@ export class User {
 		const passwordHash = await bcrypt.hash(password, 10);
 
 		const userId = uuidv4();
+		const verificationToken = uuidv4();
 		const sql = `
-      INSERT INTO users (id, email, password_hash, name, is_admin)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, email, name, is_admin, created_at
+      INSERT INTO users (id, email, password_hash, name, is_admin, verification_token)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id, email, name, is_admin, verification_token, created_at
     `;
 
 		try {
@@ -25,6 +26,7 @@ export class User {
 				passwordHash,
 				name,
 				isAdmin,
+				verificationToken,
 			]);
 			const user = result.rows[0];
 
@@ -70,7 +72,7 @@ export class User {
 		}
 
 		const sql = `
-      SELECT id, email, password_hash, name, is_admin, is_active, created_at
+      SELECT id, email, password_hash, name, is_admin, is_active, is_verified, verification_token, created_at
       FROM users
       WHERE email = $1 AND is_active = true
     `;
@@ -96,7 +98,7 @@ export class User {
 		}
 
 		const sql = `
-      SELECT u.id, u.email, u.name, u.is_admin, u.is_active, u.created_at,
+      SELECT u.id, u.email, u.name, u.is_admin, u.is_active, u.is_verified, u.verification_token, u.created_at,
              up.avatar_url, up.bio, up.phone, up.location,
              us.theme, us.language, us.timezone, us.email_notifications,
              us.push_notifications, us.two_factor_enabled
@@ -128,6 +130,10 @@ export class User {
 
 		if (!isValidPassword) {
 			throw new Error("Invalid credentials");
+		}
+
+		if (!user.is_verified) {
+			throw new Error("Please verify your email address before logging in");
 		}
 
 		// Remove password hash from user object
@@ -551,5 +557,44 @@ export class User {
 			console.error("Failed to update user balance:", error);
 			throw error;
 		}
+	}
+
+	static async findByVerificationToken(token) {
+		const sql = `SELECT id, email, name FROM users WHERE verification_token = $1 AND is_active = true`;
+		const result = await query(sql, [token]);
+		return result.rows[0] || null;
+	}
+
+	static async verifyUser(userId) {
+		const sql = `UPDATE users SET is_verified = true, verification_token = NULL WHERE id = $1 RETURNING id, email, is_verified`;
+		const result = await query(sql, [userId]);
+		return result.rows[0];
+	}
+
+	static async setResetToken(email, token, expires) {
+		const sql = `
+			UPDATE users 
+			SET reset_password_token = $1, reset_password_expires = $2 
+			WHERE email = $3 AND is_active = true 
+			RETURNING id, email, name
+		`;
+		const result = await query(sql, [token, expires, email]);
+		return result.rows[0];
+	}
+
+	static async findByResetToken(token) {
+		const sql = `
+			SELECT id, email, name FROM users 
+			WHERE reset_password_token = $1 AND reset_password_expires > CURRENT_TIMESTAMP AND is_active = true
+		`;
+		const result = await query(sql, [token]);
+		return result.rows[0] || null;
+	}
+
+	static async updatePassword(userId, newPassword) {
+		const passwordHash = await bcrypt.hash(newPassword, 10);
+		const sql = `UPDATE users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2 RETURNING id, email`;
+		const result = await query(sql, [passwordHash, userId]);
+		return result.rows[0];
 	}
 }

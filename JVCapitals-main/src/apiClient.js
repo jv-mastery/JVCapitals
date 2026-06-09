@@ -62,16 +62,9 @@ apiClient.interceptors.response.use(
 			} catch (refreshError) {
 				// Refresh failed, clear tokens and redirect to login
 				console.error("Token refresh failed:", refreshError);
-
-				// Clear all tokens
-				localStorage.removeItem("jwt_token");
-				localStorage.removeItem("refresh_token");
-
-				// Clear Zustand store
 				const authStore = useAuthStore.getState();
-				authStore.setToken(null);
-				authStore.setRefreshToken(null);
-				authStore.setUser(null);
+				// Use the centralized logout logic
+				authStore.logout();
 
 				// Redirect to login
 				window.location.href = "#/login";
